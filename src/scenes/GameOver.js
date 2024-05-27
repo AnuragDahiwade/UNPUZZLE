@@ -23,6 +23,7 @@ export class GameOver extends Scene
         backtolevels.setInteractive();
 
         backtolevels.on('pointerdown', () => {
+            this.scene.stop('Game');
             this.scene.start("gameLevels");
         }, this);
     }

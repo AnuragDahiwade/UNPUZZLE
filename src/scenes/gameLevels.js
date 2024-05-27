@@ -1,26 +1,21 @@
-
-
 import { Scene } from 'phaser';
 import outlinedScene from './outlinedScene.js';
 import game from '../main.js';
 import Game from './Game.js';
 
 let gamelevels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-let unlockedLevels = [1, 1, 0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+let unlockedLevels = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 let backButton;
 let levelImage;
 let gameLevel;
 
-export class gameLevels extends Scene
-{
-    constructor ()
-    {
+export class gameLevels extends Scene {
+    constructor() {
         super('gameLevels');
     }
 
-    create ()
-    {
+    create() {
         this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2);
 
         // Define the grid size and dimensions
@@ -38,12 +33,9 @@ export class gameLevels extends Scene
         backButton.setInteractive();
 
         backButton.on('pointerdown', () => {
-            // this.scene.stop("gameLevels");
             this.scene.stop("gameLevels");
             this.scene.launch('TitlePage');
-
         }, this);
-
 
         let k = 0;
         for (let row = 0; row < gridSize; row++) {
@@ -56,12 +48,12 @@ export class gameLevels extends Scene
                     circleColor = greenColor;
                     // Add the circle
                     levelImage = this.add.image(x, y, 'gameLevel_greentile').setInteractive().setDisplaySize(100, 100);
-                    levelImage.name = `Level${k+1}`;
+                    levelImage.name = `Level${k + 1}`;
                 } else {
                     circleColor = redColor;
                     // Add the circle
                     levelImage = this.add.image(x, y, 'gameLevel_redtile').setDisplaySize(100, 100);
-                    levelImage.name = `Level${k+1}`;
+                    levelImage.name = `Level${k + 1}`;
                 }
 
                 // Add the number on the circle
@@ -75,48 +67,45 @@ export class gameLevels extends Scene
             }
         }
 
-        this.input.on('pointerdown', (pointer, gameObject) => {
-            // console.log(gameObject[0].name);
-            const levelName = gameObject[0].name;
+        this.input.on('gameobjectdown', (pointer, gameObject) => {
+            const levelName = gameObject.name;
             const levelData = GamelevelsData.levels.find(level => level.levelName === levelName);
-            this.scene.start("Game", levelData);
+            const levelDataCopy = JSON.parse(JSON.stringify(levelData));
+
+            if (levelDataCopy) {
+                this.scene.start("Game", levelDataCopy);
+            }
         });
-
-        // this.scene.launch('outlinedScene');
-
     }
 }
 
-
 const GamelevelsData = {
     "levels": [
-      {
-        "levelName": "Level1",
-        "gameVisibility": [1, 1, 0, 1],
-        "ImageNames": ['tile3', 'tile1', 'tile2'],
-        "GameDirections": [['left'], ['up'],['up', 'down', 'left', 'right']],
-        "GameNeighbours": [['tile1'], ['tile3', 'tile2'], ['tile1']],
-        "gridColsValue": 2,
-        "gridRowsValue": 2,
-        "imageSize": 100,
-        "gridAdjustValueX": 200,
-        "gridAdjustValueY": 200,
-      },
-      {
-        "levelName": "Level2",
-        "gameVisibility": [0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-        "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
-        "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
-        "GameNeighbours": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
-        "gridColsValue": 4,
-        "gridRowsValue": 4,
-        "imageSize": 100,
-        "gridAdjustValueX": 100,
-        "gridAdjustValueY": 200,
-      }
+        {
+            "levelName": "Level1",
+            "gameVisibility": [[1, 1], [null, 1]],
+            "ImageNames": ['tile3', 'tile1', 'tile2'],
+            "GameDirections": [['left'], [], [ 'down']],
+            "GameConnections": [['tile1'], ['tile3', 'tile2'], ['tile1']],
+            "gridColsValue": 2,
+            "gridRowsValue": 2,
+            "imageSize": 100,
+            "gridAdjustValueX": 200,
+            "gridAdjustValueY": 200,
+        },
+        {
+            "levelName": "Level2",
+            "gameVisibility": [[null, 1, null, null],[ 1, 1, 1, 1], [null, null, 1, null], [null, null, null, null]],
+            "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
+            "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
+            "GameConnections": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
+            "gridColsValue": 4,
+            "gridRowsValue": 4,
+            "imageSize": 100,
+            "gridAdjustValueX": 100,
+            "gridAdjustValueY": 200,
+        }
     ]
 };
-  
-
 
 export default gameLevels;
