@@ -21,6 +21,7 @@ let gridRows;
 let gridBtnValue = true;
 let gridBtn;
 
+let imageName;
 
 export class Game extends Scene {
     constructor() {
@@ -43,7 +44,6 @@ export class Game extends Scene {
     }
 
     create() {
-        console.log(completeData);
 
         // Get the width and height of the game
         let gameWidth = this.cameras.main.width;
@@ -64,7 +64,8 @@ export class Game extends Scene {
                         this,
                         j * ImageSize + gridAdjustValueX,
                         i * ImageSize + gridAdjustValueY,
-                        ImageNames[l],
+                        // ImageNames[l],
+                        "all_empty",
                         GameDirections[i][j],
                         ImageNames[l],
                         GameVisibility[i][j],
@@ -77,6 +78,8 @@ export class Game extends Scene {
                 }
             }
         }
+
+        
 
         ImageTileArray.forEach(tile => {
             this.add.existing(tile);
@@ -144,15 +147,20 @@ export class Game extends Scene {
     }
 
     update() {
-        
         const allowedDirectionsArray = getAllAllowedDirections(GameVisibility);
         GameDirections = allowedDirectionsArray;
+
 
         let l = 0;
         for (let i = 0; i < GameVisibility.length; i++) {
             for (let j = 0; j < GameVisibility[i].length; j++) {
                 if (GameVisibility[i][j] === 1) {
                     ImageTileArray[l].direction = GameDirections[i][j];
+                    const connections = getConnections(GameVisibility, i, j);
+                    const imageName = getImageName(connections);
+                    
+                    ImageTileArray[l].setTexture(imageName);
+
                     l += 1;
                 }
             }
@@ -201,6 +209,51 @@ export class Game extends Scene {
     }
 
 
+}
+
+
+// *****************************************************************************************************************************
+// *****************************************************************************************************************************
+
+function getImageName(connections) {
+    const directionsToImage = {
+        'up': 'one_up',
+        'down': 'one_down',
+        'left': 'one_left',
+        'right': 'one_right',
+        'up_down': 'two_up_down',
+        'left_right': 'two_left_right',
+        'up_right': 'two_up_right',
+        'up_left': 'two_left_up',
+        'down_right': 'two_right_down',
+        'down_left': 'two_left_down',
+        'up_down_right': 'three_left_rem',
+        'up_down_left': 'three_right_rem',
+        'up_left_right': 'three_down_rem',
+        'down_left_right': 'three_up_rem',
+        'up_down_left_right': 'all_four'
+       
+    };
+
+    const imageName = directionsToImage[connections.join('_')];
+    return imageName ? imageName : 'all_empty'; // Set default image if no mapping found
+}
+
+function getConnections(matrix, row, col) {
+    const directions = ['up', 'down', 'left', 'right'];
+    const connectedDirections = [];
+    for (const dir of directions) {
+        const newRow = row + (dir === 'up' ? -1 : dir === 'down' ? 1 : 0);
+        const newCol = col + (dir === 'left' ? -1 : dir === 'right' ? 1 : 0);
+        if (isValidPosition(matrix, newRow, newCol) && matrix[newRow][newCol] === 1) {
+            connectedDirections.push(dir);
+        }
+    }
+    return connectedDirections;
+}
+
+function isValidPosition(matrix, row, col) {
+    return row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length;
 }
 
 // *****************************************************************************************************************************
@@ -323,8 +376,45 @@ function getAllAllowedDirections(imageArray) {
 // *****************************************************************************************************************************
 // *****************************************************************************************************************************
 
+function findConnectedOnes(matrix) {
+    const directions = [
+        { row: -1, col: 0, dir: 'up' },
+        { row: 1, col: 0, dir: 'down' },
+        { row: 0, col: -1, dir: 'left' },
+        { row: 0, col: 1, dir: 'right' }
+    ];
+
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    const result = [];
+
+    function isValid(r, c) {
+        return r >= 0 && r < rows && c >= 0 && c < cols;
+    }
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (matrix[r][c] === 1) {
+                const connections = [];
+                for (const { row, col, dir } of directions) {
+                    const newRow = r + row;
+                    const newCol = c + col;
+                    if (isValid(newRow, newCol) && matrix[newRow][newCol] === 1) {
+                        connections.push(dir);
+                    }
+                }
+                result.push({ position: [r, c], connections });
+            }
+        }
+    }
+
+    return result;
+}
 
 
+
+// *****************************************************************************************************************************
+// *****************************************************************************************************************************
 
 
 

@@ -99,6 +99,23 @@ export class Preloader extends Scene
         this.load.image("tile5", `./Tiles/2.png`);
         this.load.image("tile6", `./Tiles/3.png`);
 
+        // All GameImages
+        this.load.image('all_empty', './Tiles_new/all_empty.png')
+        this.load.image('all_four', './Tiles_new/all_four.png')
+        this.load.image('one_down', './Tiles_new/one_down.png')
+        this.load.image('one_left', './Tiles_new/one_left.png')
+        this.load.image('one_right', './Tiles_new/one_right.png')
+        this.load.image('one_up', './Tiles_new/one_up.png')
+        this.load.image('three_down_rem', './Tiles_new/three_down_rem.png')
+        this.load.image('three_left_rem', './Tiles_new/three_left_rem.png')
+        this.load.image('three_right_rem', './Tiles_new/three_right_rem.png')
+        this.load.image('three_up_rem', './Tiles_new/three_up_rem.png')
+        this.load.image('two_left_down', './Tiles_new/two_left_down.png')
+        this.load.image('two_left_right', './Tiles_new/two_left_right.png')
+        this.load.image('two_left_up', './Tiles_new/two_left_up.png')
+        this.load.image('two_right_down', './Tiles_new/two_right_down.png')
+        this.load.image('two_up_down', './Tiles_new/two_up_down.png')
+        this.load.image('two_up_right', './Tiles_new/two_up_right.png')
 
         // TitlePage Assets
         this.load.image('titlePageGameName', 'Unpuzzle_TitlePage_GameName.png');
