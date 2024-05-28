@@ -12,6 +12,7 @@ let completeData;
 let levelName;
 let ImageNames;
 let GameVisibility;
+let ImageVisibility;
 let GameDirections;
 let GameConnections;
 
@@ -53,7 +54,7 @@ export class Game extends Scene {
         // console.log(GameVisibility);
         GameDirections = allowedDirectionsArray;
 
-        this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2);
+        // this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2);
 
         ImageTileArray = [];
         let l = 0;
@@ -85,7 +86,6 @@ export class Game extends Scene {
             this.add.existing(tile);
             this.input.setDraggable(tile);
         });
-
 
         this.input.on('dragstart', (pointer, gameObject) => {
 
@@ -150,13 +150,17 @@ export class Game extends Scene {
         const allowedDirectionsArray = getAllAllowedDirections(GameVisibility);
         GameDirections = allowedDirectionsArray;
 
+        ImageVisibility = processConnections(GameVisibility);
+        // console.log(ImageVisibility);
 
         let l = 0;
         for (let i = 0; i < GameVisibility.length; i++) {
             for (let j = 0; j < GameVisibility[i].length; j++) {
                 if (GameVisibility[i][j] === 1) {
                     ImageTileArray[l].direction = GameDirections[i][j];
-                    const connections = getConnections(GameVisibility, i, j);
+                    // const connections = getConnections(GameVisibility, i, j);
+                    const connections = ImageVisibility[i][j];
+                    // console.log(connections);
                     const imageName = getImageName(connections);
                     
                     ImageTileArray[l].setTexture(imageName);
@@ -167,12 +171,10 @@ export class Game extends Scene {
         }
 
         if (ImageTileArray.length <= 0) {
-            this.scene.start("GameOver");
+            // this.scene.start("GameOver");
+            this.scene.get('GameTemplate').changeScene('Game', 'GameOver');
         }
-
     }
-
-
 
 
     createGridBtn() {
@@ -207,7 +209,6 @@ export class Game extends Scene {
         // Restore the main scene's scale
         this.cameras.main.setZoom(1.0);
     }
-
 
 }
 
@@ -256,6 +257,65 @@ function isValidPosition(matrix, row, col) {
     return row >= 0 && row < matrix.length && col >= 0 && col < matrix[0].length;
 }
 
+
+
+function processConnections(grid) {
+    // Create a result array initialized to null
+    const result = grid.map(row => row.map(cell => null));
+    
+    const directions = [
+        { name: 'up', dx: -1, dy: 0 },
+        { name: 'down', dx: 1, dy: 0 },
+        { name: 'left', dx: 0, dy: -1 },
+        { name: 'right', dx: 0, dy: 1 }
+    ];
+    
+    function isValid(x, y) {
+        return x >= 0 && x < grid.length && y >= 0 && y < grid[0].length;
+    }
+
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            if (grid[i][j] === 1 && result[i][j] === null) {
+                let connections = [];
+                
+                directions.forEach(direction => {
+                    const newX = i + direction.dx;
+                    const newY = j + direction.dy;
+                    if (isValid(newX, newY) && grid[newX][newY] === 1 && result[newX][newY] === null) {
+                        connections.push(direction.name);
+                    }
+                });
+                
+                // If there are connections, mark the first 1
+                if (connections.length > 0) {
+                    result[i][j] = connections;
+                    // Mark subsequent connected 1s as 'processed'
+                    connections.forEach(direction => {
+                        const newX = i + direction.dx;
+                        const newY = j + direction.dy;
+                        if (isValid(newX, newY)) {
+                            result[newX][newY] = 'processed';
+                        }
+                    });
+                } else {
+                    result[i][j] = [];
+                }
+            }
+        }
+    }
+
+    // Convert 'processed' markers back to null for clarity
+    for (let i = 0; i < result.length; i++) {
+        for (let j = 0; j < result[i].length; j++) {
+            if (result[i][j] === 'processed') {
+                result[i][j] = null;
+            }
+        }
+    }
+    
+    return result;
+}
 // *****************************************************************************************************************************
 // *****************************************************************************************************************************
 // *****************************************************************************************************************************
@@ -480,11 +540,6 @@ function canMove(tile, direction) {
     return true;
 }
 
-// This is to update the directions 
-
-function UpdageAllowedDirections(tiles, i, j) {
-    
-}
 
 export default Game;
 

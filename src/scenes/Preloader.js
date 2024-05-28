@@ -1,6 +1,9 @@
 import { Scene } from 'phaser';
 import game from '../main.js';
 
+import TitlePage from './TitlePage.js';
+
+
 const gameOptions = {
     TileSize: 288,   //288
     tileSpacing: 15,  //20
@@ -20,7 +23,7 @@ export class Preloader extends Scene
     init ()
     {
         //  We loaded this image in our Boot Scene, so we can display it here
-        this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'background1').setScale(1.3);
+        this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'background').setScale(1.1);
 
         this.anims.create({
             key: 'loading',
@@ -99,6 +102,10 @@ export class Preloader extends Scene
         this.load.image("tile5", `./Tiles/2.png`);
         this.load.image("tile6", `./Tiles/3.png`);
 
+
+        // Template Page Assets
+        this.load.image("cross", 'Unpuzzle_Template_cross.png');
+
         // All GameImages
         this.load.image('all_empty', './Tiles_new/all_empty.png')
         this.load.image('all_four', './Tiles_new/all_four.png')
@@ -153,12 +160,9 @@ export class Preloader extends Scene
 
     create ()
     {
-        //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
-        //  For example, you can define global animations here, so we can use them in other scenes.
+        this.scene.start('GameTemplate');
+        // this.scene.get('GameTemplate').changeScene('Preloader', 'TitlePage');
 
-        //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-        
-        this.scene.start('TitlePage');
     }
 }
 

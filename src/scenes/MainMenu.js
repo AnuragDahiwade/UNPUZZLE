@@ -11,7 +11,7 @@ export class MainMenu extends Scene
 
     create ()
     {
-        this.add.image(game.config.width / 2, game.config.height / 2, 'background');
+        // this.add.image(game.config.width / 2, game.config.height / 2, 'background');
         this.add.image(game.config.width / 2, game.config.height / 2, 'logo');
 
         this.add.text(game.config.width / 2, game.config.height / 1.5, 'Main Menu', {

@@ -10,8 +10,9 @@ export class Boot extends Scene
    
     preload ()
     {
-        this.load.image('background', 'assets/bg.png');
-        this.load.image('background1', 'assets/bg1.jpg');
+        this.load.image('background', 'assets/bg1.jpg');
+        this.load.image('background1', 'assets/bg_.png');
+        this.load.image('background2', 'assets/bg_.png');
         this.load.spritesheet('rockets', 'assets/rocketSpritesheet.png', {
             frameWidth: 1080,
             frameHeight: 1080
@@ -21,6 +22,8 @@ export class Boot extends Scene
     create ()
     {
         this.scene.start('Preloader');
+        // this.scene.get('GameTemplate').changeScene('Boot', 'Preloader');
+
     }
 }
 

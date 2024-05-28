@@ -14,7 +14,7 @@ export class GameOver extends Scene
         let gameWidth = this.cameras.main.width;
         let gameHeight = this.cameras.main.height;
 
-        this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2);
+        // this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2);
 
 
         this.add.image(game.config.width / 2, game.config.height / 2 - 100, 'gameOver_YouWin').setScale(0.8);

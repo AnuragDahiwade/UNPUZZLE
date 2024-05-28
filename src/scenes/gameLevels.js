@@ -16,7 +16,7 @@ export class gameLevels extends Scene {
     }
 
     create() {
-        this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2);
+        // this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2).setAlpha(0.3);
 
         // Define the grid size and dimensions
         const gridSize = 4;
@@ -33,8 +33,7 @@ export class gameLevels extends Scene {
         backButton.setInteractive();
 
         backButton.on('pointerdown', () => {
-            this.scene.stop("gameLevels");
-            this.scene.launch('TitlePage');
+            this.scene.get('GameTemplate').changeScene('gameLevels', 'TitlePage');
         }, this);
 
         let k = 0;
@@ -73,7 +72,9 @@ export class gameLevels extends Scene {
             const levelDataCopy = JSON.parse(JSON.stringify(levelData));
 
             if (levelDataCopy) {
-                this.scene.start("Game", levelDataCopy);
+                // this.scene.start("Game", levelDataCopy);
+                this.scene.get('GameTemplate').changeScene('gameLevels', 'Game', levelDataCopy);
+
             }
         });
     }
