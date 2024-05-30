@@ -7,6 +7,7 @@ import Preloader  from './scenes/Preloader';
 import outlinedScene from './scenes/outlinedScene';
 import gameLevels from './scenes/gameLevels';
 import TitlePage from './scenes/TitlePage';
+import _animationExperiment from './scenes/_animationExperiment';
 
 const gameOptions = {
     TileSize: 100,   
@@ -15,7 +16,7 @@ const gameOptions = {
     tweenSpeed: 50,
     aspectRatio: 16 / 9,
     padding: 100
-  };
+};
 
 
 let width = gameOptions.boardSize.cols * gameOptions.padding;
@@ -34,6 +35,7 @@ const config = {
     scene: [
         Boot,
         Preloader,
+        _animationExperiment,
         GameTemplate,
         TitlePage,
         MainMenu,
@@ -51,4 +53,5 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
 export default game;

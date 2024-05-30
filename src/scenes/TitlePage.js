@@ -16,9 +16,11 @@ export class TitlePage extends Scene
         this.gameTitle = this.add.image(game.config.width / 2, game.config.height / 2 - 100, 'titlePageGameName');
 
         let startGamebtn = this.add.image(game.config.width / 2, game.config.height / 2 + 150, 'titlePageStartGame');
-        startGamebtn.setInteractive();
+        startGamebtn.setInteractive().setAlpha(1);
+        
         startGamebtn.on('pointerdown', () => {
             this.scene.get('GameTemplate').changeScene('TitlePage', 'gameLevels');
+           
         }, this);
 
     }

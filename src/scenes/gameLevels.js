@@ -4,7 +4,7 @@ import game from '../main.js';
 import Game from './Game.js';
 
 let gamelevels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-let unlockedLevels = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+let unlockedLevels = [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
 
 let backButton;
 let levelImage;
@@ -22,7 +22,7 @@ export class gameLevels extends Scene {
         const gridSize = 4;
         const cellSize = 100;
         const margin = 20; // Define margin size
-
+        
         // Define colors for the shapes
         const greenColor = 0x00ff00; // Green
         const redColor = 0xff0000; // Red
@@ -33,7 +33,11 @@ export class gameLevels extends Scene {
         backButton.setInteractive();
 
         backButton.on('pointerdown', () => {
-            this.scene.get('GameTemplate').changeScene('gameLevels', 'TitlePage');
+            try {
+                this.scene.get('GameTemplate').changeScene('gameLevels', 'TitlePage');  
+            } catch (error) {
+                console.log(error);
+            }
         }, this);
 
         let k = 0;
@@ -66,17 +70,56 @@ export class gameLevels extends Scene {
             }
         }
 
-        this.input.on('gameobjectdown', (pointer, gameObject) => {
-            const levelName = gameObject.name;
+        try {
+            this.input.on('gameobjectdown', (pointer, gameObject) => {
+                const levelName = gameObject.name;
+                const levelData = GamelevelsData.levels.find(level => level.levelName === levelName);
+                const levelDataCopy = JSON.parse(JSON.stringify(levelData));
+    
+                if (levelDataCopy) {
+                    // this.scene.start("Game", levelDataCopy);
+                    this.scene.get('GameTemplate').changeScene('gameLevels', 'Game', levelDataCopy);
+                }
+            });
+        } catch (error) {
+            console.log("Some Error: ");
+            console.log(error);
+        }
+    }
+
+    nextLevel(gameName) {
+        
+        try {
+            const input = gameName;
+            let strName = "";
+            let number = "";
+                // Loop through the string to separate letters and numbers
+            for (let i = 0; i < input.length; i++) {
+                if (isNaN(input[i])) {
+                    strName += input[i];
+                } else {
+                    number += input[i];
+                }
+            }
+            number = parseInt(number, 10); 
+            number = number + 1;
+
+            const levelName = strName + number;
             const levelData = GamelevelsData.levels.find(level => level.levelName === levelName);
             const levelDataCopy = JSON.parse(JSON.stringify(levelData));
 
             if (levelDataCopy) {
                 // this.scene.start("Game", levelDataCopy);
-                this.scene.get('GameTemplate').changeScene('gameLevels', 'Game', levelDataCopy);
-
+                this.scene.get('GameTemplate').changeScene('Game', 'Game', levelDataCopy);
+            }else{
+                this.scene.get('GameTemplate').changeScene('Game', 'GameOver');
             }
-        });
+        } catch (error) {
+            console.log("Next Level Coming Soon!!!!");
+            // console.log(error);
+            this.scene.get('GameTemplate').changeScene('Game', 'GameOver');
+        }
+
     }
 }
 
@@ -105,7 +148,79 @@ const GamelevelsData = {
             "imageSize": 100,
             "gridAdjustValueX": 100,
             "gridAdjustValueY": 200,
-        }
+        },
+        {
+            "levelName": "Level3",
+            "gameVisibility": [[1, null, 1, null],[null, 1, null, 1],[1, 1, 1, null],[null, 1, null, 1]],
+            "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
+            "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
+            "GameConnections": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
+            "gridColsValue": 4,
+            "gridRowsValue": 4,
+            "imageSize": 100,
+            "gridAdjustValueX": 100,
+            "gridAdjustValueY": 200,
+        },
+        {
+            "levelName": "Level4",
+            "gameVisibility": [[1, 1, null, 1, 1],[1, null, 1, 1, null],[null, null, 1, null, null]],
+            "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
+            "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
+            "GameConnections": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
+            "gridColsValue": 3,
+            "gridRowsValue": 5,
+            "imageSize": 90,
+            "gridAdjustValueX": 80,
+            "gridAdjustValueY": 200,
+        },
+        {
+            "levelName": "Level5",
+            "gameVisibility": [[1,1,1,1], [1,null,1,null], [null, 1, null, 1],[1,1,null, 1]],
+            "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
+            "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
+            "GameConnections": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
+            "gridColsValue": 4,
+            "gridRowsValue": 4,
+            "imageSize": 100,
+            "gridAdjustValueX": 100,
+            "gridAdjustValueY": 200,
+        },
+        {
+            "levelName": "Level6",
+            "gameVisibility": [[1,1,null,1], [1,null,1, null], [null,1,1,1],[1,1,null,1], [null, 1, 1, null]],
+            "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
+            "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
+            "GameConnections": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
+            "gridColsValue": 4,
+            "gridRowsValue": 5,
+            "imageSize": 100,
+            "gridAdjustValueX": 100,
+            "gridAdjustValueY": 200,
+        },
+        {
+            "levelName": "Level7",
+            "gameVisibility": [[1,1,null,1, null], [1,null,1, null, 1], [null,1,null,1, 1], [1,1,null, null,1], [null,1, 1, 1, null]],
+            "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
+            "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
+            "GameConnections": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
+            "gridColsValue": 5,
+            "gridRowsValue": 5,
+            "imageSize": 90,
+            "gridAdjustValueX": 80,
+            "gridAdjustValueY": 200,
+        },
+        {
+            "levelName": "Level8",
+            "gameVisibility": [[1,1,1,1,1, null], [1,null,1, null, 1], [null,1,1,1,null], [1,null, 1, null,1], [null,1,1,1,null], [1,null, 1, null,1]],
+            "ImageNames": ['tile1', 'tile3', 'tile2', 'tile4', 'tile5', 'tile6'],
+            "GameDirections": [['up'], ['left'], ['up', 'down', 'right', 'left'], ['right'], ['right'], ['down']],
+            "GameConnections": [['tile3'], ['tile3'], ['tile1', 'tile2', 'tile4'], ['tile3', 'tile5', 'tile6'], ['tile4'], ['tile4']],
+            "gridColsValue": 5,
+            "gridRowsValue": 6,
+            "imageSize": 80,
+            "gridAdjustValueX": 80,
+            "gridAdjustValueY": 200,
+        },
     ]
 };
 

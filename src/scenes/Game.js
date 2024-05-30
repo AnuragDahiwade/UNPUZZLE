@@ -1,12 +1,15 @@
 import { Scene, GameObjects, Tweens } from 'phaser';
 import outlinedScene from './outlinedScene.js';
 import game from '../main.js';
+import gameLevels from './gameLevels.js';
+
 
 let ImageTileArray;
+let ShadowTileArray;
 
-let ImageSize = 100;
-let gridAdjustValueX = 100;
-let gridAdjustValueY = 100;
+let ImageSize;
+let gridAdjustValueX;
+let gridAdjustValueY;
 
 let completeData;
 let levelName;
@@ -22,7 +25,10 @@ let gridRows;
 let gridBtnValue = true;
 let gridBtn;
 
+let gameLight;
+
 let imageName;
+let changeLevel = false; 
 
 export class Game extends Scene {
     constructor() {
@@ -46,6 +52,8 @@ export class Game extends Scene {
 
     create() {
 
+        changeLevel = false;
+
         // Get the width and height of the game
         let gameWidth = this.cameras.main.width;
         let gameHeight = this.cameras.main.height;
@@ -57,10 +65,31 @@ export class Game extends Scene {
         // this.add.image(game.config.width / 2, game.config.height / 2, 'titlePageBG').setScale(1.2);
 
         ImageTileArray = [];
+        ShadowTileArray = [];
+
         let l = 0;
         for (let i = 0; i < GameVisibility.length; i++) {
             for (let j = 0; j < GameVisibility[i].length; j++) {
                 if (GameVisibility[i][j] === 1) {
+                    // imageShadow
+                    let tileShadow = new createImageTile(
+                        this,
+                        j * ImageSize + gridAdjustValueX + 7,
+                        i * ImageSize + gridAdjustValueY + 8,
+                        // ImageNames[l],
+                        "imageShadow",
+                        GameDirections[i][j],
+                        ImageNames[l],
+                        GameVisibility[i][j],
+                        GameConnections[l],
+                        i,
+                        j,
+                        ImageSize
+                    );
+                    tileShadow.setAlpha(0.5);
+                    this.add.existing(tileShadow);
+                    ShadowTileArray.push(tileShadow);
+
                     let tile = new createImageTile(
                         this,
                         j * ImageSize + gridAdjustValueX,
@@ -72,42 +101,90 @@ export class Game extends Scene {
                         GameVisibility[i][j],
                         GameConnections[l],
                         i,
-                        j
+                        j,
+                        ImageSize
                     );
                     l += 1;
                     ImageTileArray.push(tile);
+
+                    let blankTileImage = new createImageTile(
+                        this,
+                        j * ImageSize + gridAdjustValueX,
+                        i * ImageSize + gridAdjustValueY,
+                        // ImageNames[l],
+                        "border_after_destroyed_img",
+                        [],
+                        [],
+                        [],
+                        [],
+                        i,
+                        j,
+                        ImageSize
+                    );
+                    this.add.existing(blankTileImage);
+                    
                 }
             }
         }
 
         
-
+        // Assuming ImageTileArray and GameVisibility are already defined
         ImageTileArray.forEach(tile => {
             this.add.existing(tile);
             this.input.setDraggable(tile);
+
+            // Store original position for each tile
+            tile.originalX = tile.x;
+            tile.originalY = tile.y;
+
         });
 
         this.input.on('dragstart', (pointer, gameObject) => {
-
-            gameObject.setAlpha(0.5);
+            gameObject.setAlpha(0.8);
+            if (gameLight) {
+                gameLight.destroy();
+                gameLight = null;
+            }
+            gameLight = this.add.rectangle(-50, -50, ImageSize, ImageSize, 0xffffff, 0.45);
         });
-
+        
         this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-            gameObject.x = dragX;
-            gameObject.y = dragY;
+            // Calculate the delta distance
+            let deltaX = dragX - gameObject.originalX;
+            let deltaY = dragY - gameObject.originalY;
+        
+            let direction = getDirection(deltaX, deltaY);
+        
+            // Update the light rectangle's size and position based on the drag direction
+            if (direction === 'left' || direction === 'right') {
+                gameLight.width = 1000;
+                gameLight.height = ImageSize;
+                gameLight.x = gameObject.originalX + (direction === 'left' ? -1000 : 0);
+                gameLight.y = gameObject.originalY;
+            } else if (direction === 'up' || direction === 'down') {
+                gameLight.width = ImageSize;
+                gameLight.height = 1000;
+                gameLight.x = gameObject.originalX;
+                gameLight.y = gameObject.originalY + (direction === 'up' ? -1000: 0);
+            }
         });
-
+        
         this.input.on('dragend', (pointer, gameObject) => {
             gameObject.setAlpha(1);
-            let deltaX = gameObject.x - gameObject.originalX;
-            let deltaY = gameObject.y - gameObject.originalY;
-
+        
+            let deltaX = pointer.x - gameObject.originalX;
+            let deltaY = pointer.y - gameObject.originalY;
+        
             if (Math.abs(deltaX) > 50 || Math.abs(deltaY) > 50) {
                 let direction = getDirection(deltaX, deltaY);
                 if (canMove(gameObject, direction)) {
+
+                    if (gameLight) {
+                        gameLight.fillColor = 0x3CFF5D;
+                    }
                     let offscreenX = gameObject.originalX;
                     let offscreenY = gameObject.originalY;
-
+        
                     if (direction === 'left') {
                         offscreenX -= this.cameras.main.width;
                     } else if (direction === 'right') {
@@ -117,33 +194,106 @@ export class Game extends Scene {
                     } else if (direction === 'down') {
                         offscreenY += this.cameras.main.height;
                     }
-
+        
                     this.tweens.add({
                         targets: gameObject,
                         x: offscreenX,
                         y: offscreenY,
-                        duration: 500,
-                        onComplete: () => {
+                        rotation: Math.PI * 3,
+                        duration: 700,
+                        onStart: () => {
+                            this.playDestroySound();
+
                             ImageTileArray = ImageTileArray.filter(tile => tile !== gameObject);
                             let p = gameObject.i;
                             let q = gameObject.j;
-                            GameVisibility[p][q] = null;
 
+                            let shadowImg = ShadowTileArray.filter(shadowtile => gameObject.i === shadowtile.i && gameObject.j === shadowtile.j);
+                            if(shadowImg.length > 0){
+                                shadowImg.forEach(element => {
+                                    element.destroy();
+                                });
+                            }
+
+                            // Remove the tile from ImageTileArray and update GameVisibility
+                            GameVisibility[p][q] = null;
+                        },
+                        onComplete: () => {
                             gameObject.destroy();
+
+                            if(ImageTileArray.length <= 0) {
+                                changeLevel = true;
+                            }
                         }
                     });
                 } else {
+                    this.playWrondMoveSound();
+                    this.shakeImage(gameObject);
+
+                    if (gameLight) {
+                        gameLight.fillColor = 0xFF3C3C;
+                    }
+                    // If tile can't move, revert to original position
                     gameObject.x = gameObject.originalX;
                     gameObject.y = gameObject.originalY;
                 }
             } else {
+                // If drag is not far enough, revert to original position
                 gameObject.x = gameObject.originalX;
                 gameObject.y = gameObject.originalY;
             }
+
+            // Destroy the light rectangle
+            
+                this.time.delayedCall(300, () => {
+                    if (gameLight) {
+                        gameLight.destroy();
+                        gameLight = null;
+                    }
+                });
+            
         });
+
 
         this.createGridBtn();
 
+    }
+
+    playDestroySound() {
+        // Play the sound
+        let sound = this.sound.add('destroySound');
+        sound.play();
+
+        // Stop the sound after 1 second
+        this.time.delayedCall(700, () => {
+            sound.stop();
+        });
+    }
+    playWrondMoveSound() {
+        // Play the sound
+        let sound = this.sound.add('wrongMove');
+        sound.play();
+
+        // Stop the sound after 1 second
+        this.time.delayedCall(300, () => {
+            sound.stop();
+        });
+    }
+
+    shakeImage(image) {
+        var duration = 50; // Duration of the shake effect in milliseconds
+        var intensity = 0.05; // Intensity of the shake effect
+        
+        this.tweens.add({
+            targets: image,
+            x: image.x + Math.random() * intensity * 100,
+            y: image.y + Math.random() * intensity * 100,
+            duration: duration / 2,
+            ease: 'Power1',
+            yoyo: true,
+            repeat: 4 // Repeat the shaking effect 4 times
+        });
+       
     }
 
     update() {
@@ -160,9 +310,8 @@ export class Game extends Scene {
                     ImageTileArray[l].direction = GameDirections[i][j];
                     // const connections = getConnections(GameVisibility, i, j);
                     const connections = ImageVisibility[i][j];
-                    // console.log(connections);
+
                     const imageName = getImageName(connections);
-                    
                     ImageTileArray[l].setTexture(imageName);
 
                     l += 1;
@@ -170,10 +319,12 @@ export class Game extends Scene {
             }
         }
 
-        if (ImageTileArray.length <= 0) {
+        if (ImageTileArray.length <= 0 && changeLevel == true) {
             // this.scene.start("GameOver");
-            this.scene.get('GameTemplate').changeScene('Game', 'GameOver');
+            this.scene.get('gameLevels').nextLevel(levelName);
         }
+        // this.scene.get('GameTemplate').changeScene('Game', 'GameOver');
+
     }
 
 
@@ -211,6 +362,8 @@ export class Game extends Scene {
     }
 
 }
+
+
 
 
 // *****************************************************************************************************************************
@@ -480,13 +633,15 @@ function findConnectedOnes(matrix) {
 
 
 class createImageTile extends GameObjects.Image {
-    constructor(scene, x, y, texture, direction, name, visible, neighbours, i, j) {
+    constructor(scene, x, y, texture, direction, name, visible, neighbours, i, j, ImageSize) {
         super(scene, x, y, texture);
 
         this.name = name;
         this.direction = direction;
         this.setInteractive();
-        this.setDisplaySize(100, 100);
+        this.setDisplaySize(ImageSize, ImageSize);
+        this.width = ImageSize;
+        this.height = ImageSize;
         this.scene = scene;
         this.setAlpha(1);
         this.originalX = x;

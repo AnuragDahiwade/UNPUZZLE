@@ -1,4 +1,4 @@
-# Phaser Vite Template
+<!-- # Phaser Vite Template
 
 This is a Phaser 3 project template that uses Vite for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
 
@@ -98,4 +98,4 @@ Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, 
 
 The Phaser logo and characters are &copy; 2011 - 2024 Phaser Studio Inc.
 
-All rights reserved.
+All rights reserved. -->

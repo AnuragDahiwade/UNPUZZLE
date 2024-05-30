@@ -57,8 +57,10 @@ class outlinedScene extends Phaser.Scene {
         gridLevelBtn.on('pointerdown', ()=>{
             this.scene.stop("Game");
             // this.scene.stop('outlinedScene');
-            this.scene.start('gameLevels');
-            
+            // this.scene.start('gameLevels');
+
+            this.scene.get('GameTemplate').changeScene('outlinedScene','gameLevels');
+
         }, this);
 
         let levelText = this.add.text(gameWidth / 2 - 50, gameHeight - 70, "Level 0" , {
