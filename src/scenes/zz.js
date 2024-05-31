@@ -5,131 +5,93 @@
 
 
 
-
-
-
-
-// Assuming ImageTileArray and GameVisibility are already defined
-ImageTileArray.forEach(tile => {
-    this.add.existing(tile);
-    this.input.setDraggable(tile);
-
-    // Store original position for each tile
-    tile.originalX = tile.x;
-    tile.originalY = tile.y;
-    tile.i = /* set the appropriate i index */;
-    tile.j = /* set the appropriate j index */;
-});
-
-this.input.on('dragstart', (pointer, gameObject) => {
-    gameObject.setAlpha(0.5);
-
-    // Create a light rectangle and store it in the gameObject
-    gameObject.light = this.add.rectangle(gameObject.x, gameObject.y, gameObject.width, gameObject.height, 0xffffff, 0.5);
-});
-
-this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
-    // Calculate the delta distance
-    let deltaX = dragX - gameObject.originalX;
-    let deltaY = dragY - gameObject.originalY;
-
-    let direction = getDirection(deltaX, deltaY);
-
-    // Update the light rectangle's size and position based on the drag direction
-    if (direction === 'left' || direction === 'right') {
-        gameObject.light.width = this.cameras.main.width;
-        gameObject.light.height = gameObject.height;
-        gameObject.light.x = gameObject.originalX + (direction === 'left' ? -gameObject.light.width / 2 : gameObject.light.width / 2);
-        gameObject.light.y = gameObject.originalY;
-    } else if (direction === 'up' || direction === 'down') {
-        gameObject.light.width = gameObject.width;
-        gameObject.light.height = this.cameras.main.height;
-        gameObject.light.x = gameObject.originalX;
-        gameObject.light.y = gameObject.originalY + (direction === 'up' ? -gameObject.light.height / 2 : gameObject.light.height / 2);
-    }
-});
-
-this.input.on('dragend', (pointer, gameObject) => {
-    gameObject.setAlpha(1);
-
-    // Destroy the light rectangle
-    if (gameObject.light) {
-        gameObject.light.destroy();
-        gameObject.light = null;
+class MyScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'MyScene' });
+        this.level = 1; // Initial level
+        this.score = 0; // Initial score
     }
 
-    let deltaX = pointer.x - gameObject.originalX;
-    let deltaY = pointer.y - gameObject.originalY;
-
-    if (Math.abs(deltaX) > 50 || Math.abs(deltaY) > 50) {
-        let direction = getDirection(deltaX, deltaY);
-        if (canMove(gameObject, direction)) {
-            let offscreenX = gameObject.originalX;
-            let offscreenY = gameObject.originalY;
-
-            if (direction === 'left') {
-                offscreenX -= this.cameras.main.width;
-            } else if (direction === 'right') {
-                offscreenX += this.cameras.main.width;
-            } else if (direction === 'up') {
-                offscreenY -= this.cameras.main.height;
-            } else if (direction === 'down') {
-                offscreenY += this.cameras.main.height;
-            }
-
-            this.tweens.add({
-                targets: gameObject,
-                x: offscreenX,
-                y: offscreenY,
-                duration: 500,
-                onComplete: () => {
-                    // Remove the tile from ImageTileArray and update GameVisibility
-                    ImageTileArray = ImageTileArray.filter(tile => tile !== gameObject);
-                    let p = gameObject.i;
-                    let q = gameObject.j;
-                    GameVisibility[p][q] = null;
-
-                    // Destroy the tile
-                    gameObject.destroy();
-                }
-            });
-        } else {
-            // If tile can't move, revert to original position
-            gameObject.x = gameObject.originalX;
-            gameObject.y = gameObject.originalY;
-        }
-    } else {
-        // If drag is not far enough, revert to original position
-        gameObject.x = gameObject.originalX;
-        gameObject.y = gameObject.originalY;
+    preload() {
+        // Load any assets you need
+        this.load.image('exampleImage', 'path/to/your/image.png');
+        this.load.audio('destroySound', 'path/to/your/audio.wav');
+        // Load button images
+        this.load.image('button', 'path/to/your/button.png');
     }
-});
 
-// Helper function to determine drag direction
-function getDirection(deltaX, deltaY) {
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        return deltaX > 0 ? 'right' : 'left';
-    } else {
-        return deltaY > 0 ? 'down' : 'up';
+    create() {
+        // Create and add images to the scene and to the imageArray
+        // For demonstration purposes, assuming images are added to the scene and logic is in place
+        
+        // Example to end the game and show the pop-up
+        this.time.delayedCall(5000, this.endGame, [], this); // End the game after 5 seconds
+    }
+
+    endGame() {
+        // Display the pop-up
+        this.showPopUp();
+    }
+
+    showPopUp() {
+        // Create a semi-transparent background
+        this.popupBackground = this.add.graphics();
+        this.popupBackground.fillStyle(0x000000, 0.5);
+        this.popupBackground.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
+
+        // Create the pop-up container
+        this.popupContainer = this.add.container(this.cameras.main.width / 2, this.cameras.main.height / 2);
+
+        // Add the score text
+        this.scoreText = this.add.text(0, -50, 'Score: ' + this.score, { font: '32px Arial', fill: '#ffffff' }).setOrigin(0.5);
+        this.popupContainer.add(this.scoreText);
+
+        // Add the restart button
+        this.restartButton = this.add.sprite(0, 0, 'button').setInteractive();
+        this.restartButton.on('pointerdown', this.restartGame, this);
+        this.popupContainer.add(this.restartButton);
+
+        // Add the next level button
+        this.nextLevelButton = this.add.sprite(0, 100, 'button').setInteractive();
+        this.nextLevelButton.on('pointerdown', this.nextLevel, this);
+        this.popupContainer.add(this.nextLevelButton);
+    }
+
+    restartGame() {
+        // Hide the pop-up
+        this.popupContainer.destroy();
+        this.popupBackground.destroy();
+
+        // Restart the game
+        this.scene.restart({ level: this.level });
+    }
+
+    nextLevel() {
+        // Hide the pop-up
+        this.popupContainer.destroy();
+        this.popupBackground.destroy();
+
+        // Increment the level
+        this.level += 1;
+
+        // Load the next level
+        this.scene.restart({ level: this.level });
+    }
+
+    update() {
+        // Update logic if needed
     }
 }
 
-// Function to check if the tile can move in the specified direction
-function canMove(tile, direction) {
-    let p = tile.i;
-    let q = tile.j;
+// Create a new Phaser game with the scene
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: MyScene
+};
 
-    if (direction === 'left') {
-        return q > 0 && GameVisibility[p][q - 1] === null;
-    } else if (direction === 'right') {
-        return q < GameVisibility[0].length - 1 && GameVisibility[p][q + 1] === null;
-    } else if (direction === 'up') {
-        return p > 0 && GameVisibility[p - 1][q] === null;
-    } else if (direction === 'down') {
-        return p < GameVisibility.length - 1 && GameVisibility[p + 1][q] === null;
-    }
-    return false;
-}
+const game = new Phaser.Game(config);
 
 
 
@@ -141,6 +103,127 @@ function canMove(tile, direction) {
 
 
 
+// // Assuming ImageTileArray and GameVisibility are already defined
+// ImageTileArray.forEach(tile => {
+//     this.add.existing(tile);
+//     this.input.setDraggable(tile);
+
+//     // Store original position for each tile
+//     tile.originalX = tile.x;
+//     tile.originalY = tile.y;
+//     tile.i = /* set the appropriate i index */;
+//     tile.j = /* set the appropriate j index */;
+// });
+
+// this.input.on('dragstart', (pointer, gameObject) => {
+//     gameObject.setAlpha(0.5);
+
+//     // Create a light rectangle and store it in the gameObject
+//     gameObject.light = this.add.rectangle(gameObject.x, gameObject.y, gameObject.width, gameObject.height, 0xffffff, 0.5);
+// });
+
+// this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+//     // Calculate the delta distance
+//     let deltaX = dragX - gameObject.originalX;
+//     let deltaY = dragY - gameObject.originalY;
+
+//     let direction = getDirection(deltaX, deltaY);
+
+//     // Update the light rectangle's size and position based on the drag direction
+//     if (direction === 'left' || direction === 'right') {
+//         gameObject.light.width = this.cameras.main.width;
+//         gameObject.light.height = gameObject.height;
+//         gameObject.light.x = gameObject.originalX + (direction === 'left' ? -gameObject.light.width / 2 : gameObject.light.width / 2);
+//         gameObject.light.y = gameObject.originalY;
+//     } else if (direction === 'up' || direction === 'down') {
+//         gameObject.light.width = gameObject.width;
+//         gameObject.light.height = this.cameras.main.height;
+//         gameObject.light.x = gameObject.originalX;
+//         gameObject.light.y = gameObject.originalY + (direction === 'up' ? -gameObject.light.height / 2 : gameObject.light.height / 2);
+//     }
+// });
+
+// this.input.on('dragend', (pointer, gameObject) => {
+//     gameObject.setAlpha(1);
+
+//     // Destroy the light rectangle
+//     if (gameObject.light) {
+//         gameObject.light.destroy();
+//         gameObject.light = null;
+//     }
+
+//     let deltaX = pointer.x - gameObject.originalX;
+//     let deltaY = pointer.y - gameObject.originalY;
+
+//     if (Math.abs(deltaX) > 50 || Math.abs(deltaY) > 50) {
+//         let direction = getDirection(deltaX, deltaY);
+//         if (canMove(gameObject, direction)) {
+//             let offscreenX = gameObject.originalX;
+//             let offscreenY = gameObject.originalY;
+
+//             if (direction === 'left') {
+//                 offscreenX -= this.cameras.main.width;
+//             } else if (direction === 'right') {
+//                 offscreenX += this.cameras.main.width;
+//             } else if (direction === 'up') {
+//                 offscreenY -= this.cameras.main.height;
+//             } else if (direction === 'down') {
+//                 offscreenY += this.cameras.main.height;
+//             }
+
+//             this.tweens.add({
+//                 targets: gameObject,
+//                 x: offscreenX,
+//                 y: offscreenY,
+//                 duration: 500,
+//                 onComplete: () => {
+//                     // Remove the tile from ImageTileArray and update GameVisibility
+//                     ImageTileArray = ImageTileArray.filter(tile => tile !== gameObject);
+//                     let p = gameObject.i;
+//                     let q = gameObject.j;
+//                     GameVisibility[p][q] = null;
+
+//                     // Destroy the tile
+//                     gameObject.destroy();
+//                 }
+//             });
+//         } else {
+//             // If tile can't move, revert to original position
+//             gameObject.x = gameObject.originalX;
+//             gameObject.y = gameObject.originalY;
+//         }
+//     } else {
+//         // If drag is not far enough, revert to original position
+//         gameObject.x = gameObject.originalX;
+//         gameObject.y = gameObject.originalY;
+//     }
+// });
+
+// // Helper function to determine drag direction
+// function getDirection(deltaX, deltaY) {
+//     if (Math.abs(deltaX) > Math.abs(deltaY)) {
+//         return deltaX > 0 ? 'right' : 'left';
+//     } else {
+//         return deltaY > 0 ? 'down' : 'up';
+//     }
+// }
+
+// // Function to check if the tile can move in the specified direction
+// function canMove(tile, direction) {
+//     let p = tile.i;
+//     let q = tile.j;
+
+//     if (direction === 'left') {
+//         return q > 0 && GameVisibility[p][q - 1] === null;
+//     } else if (direction === 'right') {
+//         return q < GameVisibility[0].length - 1 && GameVisibility[p][q + 1] === null;
+//     } else if (direction === 'up') {
+//         return p > 0 && GameVisibility[p - 1][q] === null;
+//     } else if (direction === 'down') {
+//         return p < GameVisibility.length - 1 && GameVisibility[p + 1][q] === null;
+//     }
+//     return false;
+// }
 
 
 
@@ -154,23 +237,34 @@ function canMove(tile, direction) {
 
 
 
-const input = "level188dhdhd";
 
-// Variables to hold the parts
-let level = "";
-let number = "";
 
-// Loop through the string to separate letters and numbers
-for (let i = 0; i < input.length; i++) {
-    if (isNaN(input[i])) {
-        level += input[i];
-    } else {
-        number += input[i];
-    }
-}
 
-console.log('Level:', level); // Output: Level: level
-console.log('Number:', number); // Output: Number: 1
+
+
+
+
+
+
+
+
+// const input = "level188dhdhd";
+
+// // Variables to hold the parts
+// let level = "";
+// let number = "";
+
+// // Loop through the string to separate letters and numbers
+// for (let i = 0; i < input.length; i++) {
+//     if (isNaN(input[i])) {
+//         level += input[i];
+//     } else {
+//         number += input[i];
+//     }
+// }
+
+// console.log('Level:', level); // Output: Level: level
+// console.log('Number:', number); // Output: Number: 1
 
 
 

@@ -7,6 +7,7 @@ import Preloader  from './scenes/Preloader';
 import outlinedScene from './scenes/outlinedScene';
 import gameLevels from './scenes/gameLevels';
 import TitlePage from './scenes/TitlePage';
+import scorePopUp from './scenes/scorePopUp';
 import _animationExperiment from './scenes/_animationExperiment';
 
 const gameOptions = {
@@ -40,6 +41,7 @@ const config = {
         TitlePage,
         MainMenu,
         Game,
+        scorePopUp,
         GameOver,
         outlinedScene,
         gameLevels

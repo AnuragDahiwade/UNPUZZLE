@@ -20,24 +20,29 @@ export class GameTemplate extends Scene
     create ()
     {
         
-        let crossBtn = this.add.image(game.config.width / 2, 40, 'cross').setScale(0.2);
-        crossBtn.setInteractive();
-        crossBtn.setDepth(1); 
+        let exitButton = this.add.image(50, game.config.height - 130, 'exitButton').setScale(0.06);
+        exitButton.setInteractive();
+        exitButton.setDepth(1); 
 
-        crossBtn.on('pointerdown', () => {
+        this.input.setDraggable(exitButton);
+
+        exitButton.on('drag', (pointer, dragX, dragY) => {
+            exitButton.x = 50; // Keeps the button attached to the left side
+            exitButton.y = Phaser.Math.Clamp(dragY, 35, game.config.height - 35);
+        });
+
+        exitButton.on('pointerup', () => {
             game.destroy(true); 
         }, this);
 
-
         this.loadScene('TitlePage');
 
-        // this.loadScene('_animationExperiment');
     }
 
     // Method to load a new scene and keep the template scene on top
     loadScene(sceneKey) {
         // this.scene.launch(sceneKey);
-        
+
         this.cameras.main.fadeOut(170, 0, 0, 0, (camera, progress) => {
             if (progress === 1) {
                 // Fade in effect
@@ -48,6 +53,7 @@ export class GameTemplate extends Scene
     }
 
     loadScene(sceneKey, newSceneData) {
+        // this.playnextSceneSound();
         // this.scene.launch(sceneKey, newSceneData);
         this.cameras.main.fadeOut(170, 0, 0, 0, (camera, progress) => {
             if (progress === 1) {
@@ -58,8 +64,6 @@ export class GameTemplate extends Scene
         });
         let randomColor = gameColors[Math.floor(Math.random() * gameColors.length)];
         this.cameras.main.setBackgroundColor(randomColor);
-        console.log(randomColor);
-
   
     }
 
@@ -79,6 +83,17 @@ export class GameTemplate extends Scene
             this.loadScene(newSceneKey, newSceneData);
         }
         
+    }
+
+    playnextSceneSound() {
+        // Play the sound
+        let sound = this.sound.add('next_scene');
+        sound.play({ volume: 0.43 });
+
+        // Stop the sound after 1 second
+        this.time.delayedCall(300, () => {
+            sound.stop();
+        });
     }
 
 }

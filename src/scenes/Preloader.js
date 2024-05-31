@@ -106,13 +106,15 @@ export class Preloader extends Scene
 
         // Game sounds
         this.load.audio('destroySound', 'destoyImg.wav');
-        this.load.audio('wrongMove', 'wrongMove.wav');
+        this.load.audio('wrongMove', 'Unpuzzle_wrongMove.wav');
+        this.load.audio('next_scene', 'game_scene_reevil.wav');
+        this.load.audio('selectLevel', 'select.mp3');
 
 
         // Template Page Assets
         this.load.image("cross", 'Unpuzzle_Template_cross.png');
-        this.load.image("imageShadow", 'shawod_unpuzzle.png');
-
+        this.load.image("imageShadow", 'unpuzzle_shadow_for_image.png');
+        this.load.image("exitButton", "exitButton.png");
 
         // All GameImages
         this.load.image('all_empty', './Tiles_new_1/all_empty.png')
@@ -131,7 +133,7 @@ export class Preloader extends Scene
         this.load.image('two_right_down', './Tiles_new_1/two_right_down.png')
         this.load.image('two_up_down', './Tiles_new_1/two_up_down.png')
         this.load.image('two_up_right', './Tiles_new_1/two_up_right.png')
-        this.load.image("border_after_destroyed_img", 'border_after_destroyed_img.png');
+        this.load.image("border_after_destroyed_img", 'unpuzzle_border_after_destroyed_img.png');
 
         
         // TitlePage Assets
@@ -139,9 +141,10 @@ export class Preloader extends Scene
         this.load.image('titlePageBG', 'Unpuzzle_TitlePage_Background.png');
         this.load.image('titlePageStartGame', 'Unpuzzle_TitlePage_StartGameBtn.png');
 
-        // Game Level Assets
+        // Level Assets
         this.load.image('gameLevel_greentile', 'Unpuzzle_GameLevels_greentile.png');
         this.load.image('gameLevel_redtile', 'Unpuzzle_GameLevels_redtile.png');
+
 
         // Outlined Scene Assets
         this.load.image("back", 'Unpuzzle_Back.png');
@@ -156,15 +159,27 @@ export class Preloader extends Scene
         this.load.image("sound", 'Unpuzzle_Sound.png');
         this.load.image("nosound", 'Unpuzzle_NoSound.png');
 
+        // Main Game Assets -- 
+        this.load.image("gameTimerBG", 'Unpuzzle_GameTimer.png');
+        
+
+        // gameScore pop-up Page Assets
+        this.load.image("ScorePopUp_bgImg", 'Unpuzzle_ScorePopUp_bgImg.png');
+        this.load.image("ScorePopUp_bgImgShadow", 'Unpuzzle_ScorePopUp_bgImgShadow.png');
+        this.load.image("ScorePopUp_gameName", 'Unpuzzle_ScorePopUp_GameName.png');
+        this.load.image("ScorePopUp_level", 'Unpuzzle_ScorePopUp_level.png');
+        this.load.image("ScorePopUp_nextBtn", 'Unpuzzle_ScorePopUp_nextButton.png');
+        this.load.image("ScorePopUp_restartBtn", 'Unpuzzle_ScorePopUp_restartButton.png');
+        this.load.image("ScorePopUp_scoreLebal", 'Unpuzzle_ScorePopUp_ScoreLebal.png');
+
 
         // Game over Page Assets
         this.load.image('gameOver_nextlevel', 'Unpuzzle_GameOver_nextlevels.png');
         this.load.image('gameOver_YouWin', 'Unpuzzle_GameOver_YouWin.png');
+        this.load.image('won', 'won.png');
+        this.load.image('nextLevel', 'nextLevel.png');
+        this.load.image('restartLevel', 'restartLevel.png');
 
-
-        for(let i = 0; i<100; i++){
-            this.load.image(`${i}`, `./Tiles/${i}.png`);
-        }
 
     }
 

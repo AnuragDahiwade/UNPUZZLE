@@ -10,10 +10,8 @@ export class Boot extends Scene
    
     preload ()
     {
-        this.load.image('background', 'assets/bg1.jpg');
-        this.load.image('background1', 'assets/bg_.png');
-        this.load.image('background2', 'assets/bg_.png');
-        this.load.spritesheet('rockets', 'assets/rocketSpritesheet.png', {
+        this.load.image('background', 'assets/unpuzzle_bg1.jpg');
+        this.load.spritesheet('rockets', 'assets/unpuzzle_rocketSpritesheet.png', {
             frameWidth: 1080,
             frameHeight: 1080
         });

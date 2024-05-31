@@ -13,11 +13,15 @@ let gridAdjustValueY;
 
 let completeData;
 let levelName;
+let levelNumber;
 let ImageNames;
 let GameVisibility;
 let ImageVisibility;
 let GameDirections;
 let GameConnections;
+let maxScore;
+let maxTime;
+let myScore = 0;
 
 let gridCols;
 let gridRows;
@@ -30,6 +34,20 @@ let gameLight;
 let imageName;
 let changeLevel = false; 
 
+
+let myTime = 0;
+let startTimer = 0;
+let timeText 
+let gameTimer
+let stopTimer = true;
+let stopMinutes = 0;
+let stopSeconds = 0;
+let seconds = 0;
+let gameTimerBG;
+
+let invalidClicks = 0;
+
+
 export class Game extends Scene {
     constructor() {
         super('Game');
@@ -38,6 +56,7 @@ export class Game extends Scene {
     init(data){
         completeData = data;
         levelName = data.levelName;
+        levelNumber = data.levelNumber;
         GameVisibility = data.gameVisibility;
         ImageNames = data.ImageNames;
         GameDirections = data.GameDirections;
@@ -47,7 +66,8 @@ export class Game extends Scene {
         ImageSize = data.imageSize;
         gridAdjustValueX = data.gridAdjustValueX;
         gridAdjustValueY = data.gridAdjustValueY;
-
+        maxScore = data.maxScore;
+        maxTime = data.maxTime;
     }
 
     create() {
@@ -66,6 +86,19 @@ export class Game extends Scene {
 
         ImageTileArray = [];
         ShadowTileArray = [];
+        invalidClicks = 0;
+        myScore = 0;
+
+        gameTimerBG = this.add.image(gameWidth - 100, 70, "gameTimerBG").setScale(0.6);
+
+        //initialise timer values
+        myTime = 0;
+        startTimer = 1;
+        stopTimer = false;
+        timeText = this.add.text(gameWidth - 110, 50, "_", {fontFamily: "Suez One",
+        fontWeight: 400,fontSize: '35px', fill: '#494949' });     
+        gameTimer = this.time.addEvent({ delay: 1000, callback: onEvent, callbackScope: this, loop: true });
+
 
         let l = 0;
         for (let i = 0; i < GameVisibility.length; i++) {
@@ -121,6 +154,7 @@ export class Game extends Scene {
                         j,
                         ImageSize
                     );
+                   
                     this.add.existing(blankTileImage);
                     
                 }
@@ -155,17 +189,21 @@ export class Game extends Scene {
         
             let direction = getDirection(deltaX, deltaY);
         
-            // Update the light rectangle's size and position based on the drag direction
-            if (direction === 'left' || direction === 'right') {
-                gameLight.width = 1000;
-                gameLight.height = ImageSize;
-                gameLight.x = gameObject.originalX + (direction === 'left' ? -1000 : 0);
-                gameLight.y = gameObject.originalY;
-            } else if (direction === 'up' || direction === 'down') {
-                gameLight.width = ImageSize;
-                gameLight.height = 1000;
-                gameLight.x = gameObject.originalX;
-                gameLight.y = gameObject.originalY + (direction === 'up' ? -1000: 0);
+            try {
+                // Update the light rectangle's size and position based on the drag direction
+                if (direction === 'left' || direction === 'right') {
+                    gameLight.width = 1000;
+                    gameLight.height = ImageSize;
+                    gameLight.x = gameObject.originalX + (direction === 'left' ? -1000 : 0);
+                    gameLight.y = gameObject.originalY;
+                } else if (direction === 'up' || direction === 'down') {
+                    gameLight.width = ImageSize;
+                    gameLight.height = 1000;
+                    gameLight.x = gameObject.originalX;
+                    gameLight.y = gameObject.originalY + (direction === 'up' ? -1000: 0);
+                }
+            } catch (error) {
+                console.log(error);
             }
         });
         
@@ -222,11 +260,16 @@ export class Game extends Scene {
                             gameObject.destroy();
 
                             if(ImageTileArray.length <= 0) {
-                                changeLevel = true;
+                                this.displayScorePopUp();
+
+                                // stopTimer = true;
+                                // changeLevel = true;
                             }
                         }
                     });
                 } else {
+                    invalidClicks += 1;
+
                     this.playWrondMoveSound();
                     this.shakeImage(gameObject);
 
@@ -259,10 +302,18 @@ export class Game extends Scene {
 
     }
 
+    pauseTimer() {
+        gameTimer.paused = true;
+    }
+    
+    resumeTimer() {
+        gameTimer.paused = false;
+    }
+
     playDestroySound() {
         // Play the sound
         let sound = this.sound.add('destroySound');
-        sound.play();
+        sound.play({ volume: 0.43 });
 
         // Stop the sound after 1 second
         this.time.delayedCall(700, () => {
@@ -272,7 +323,7 @@ export class Game extends Scene {
     playWrondMoveSound() {
         // Play the sound
         let sound = this.sound.add('wrongMove');
-        sound.play();
+        sound.play({ volume: 0.43 });
 
         // Stop the sound after 1 second
         this.time.delayedCall(300, () => {
@@ -297,6 +348,33 @@ export class Game extends Scene {
     }
 
     update() {
+
+      let minutes = Math.floor(myTime / 60);
+      let seconds;
+
+      if (myTime > 59) {
+          seconds = myTime % 60;
+      } else {
+          seconds = myTime;
+      }
+
+      if (stopTimer === false) {
+            // console.log(myTime);
+          if (seconds < 10) {
+              timeText.setText(minutes + ":" + "0" + seconds);
+          } else {
+              timeText.setText(minutes+ ":" + seconds);
+          }
+      } else {
+          if (stopSeconds < 10) {
+              timeText.setText(stopMinutes + ":" + "0" + stopSeconds);
+          } else {
+              timeText.setText(stopMinutes+ ":" + stopSeconds);
+          }
+      }
+    
+        
+
         const allowedDirectionsArray = getAllAllowedDirections(GameVisibility);
         GameDirections = allowedDirectionsArray;
 
@@ -323,24 +401,43 @@ export class Game extends Scene {
             // this.scene.start("GameOver");
             this.scene.get('gameLevels').nextLevel(levelName);
         }
-        // this.scene.get('GameTemplate').changeScene('Game', 'GameOver');
+
 
     }
 
+    destroyThisGameScene(){
+        this.scene.stop("Game");
+    }
 
     createGridBtn() {
-        gridBtn = this.add.image(100, 50, "grid").setDisplaySize(70, 70).setAlpha(1.2);
+        gridBtn = this.add.image(100, 70, "grid").setDisplaySize(65, 65).setAlpha(1.2);
         gridBtn.setInteractive();
         gridBtn.on('pointerdown', this.displayOutLinedScene, this);
     }
 
+    displayScorePopUp(){
+        myScore = calculateScore(maxScore, maxTime, myTime, invalidClicks);
+   
+        this.pauseTimer();
+
+        // Launch the overlay scene
+        this.scene.launch('scorePopUp', {newPopUp: true, gameLevelNumber: levelNumber,gameLevel: levelName,maxScore: maxScore, myScore: myScore});
+       
+        // Disable interactivity in the main scene
+        this.input.enabled = false;
+        
+    }
+
+
     displayOutLinedScene() {
+        this.pauseTimer();
+
         if(this.gridBtn){
             this.gridBtn.destroy();
             this.gridBtn = null;
         }
         // Launch the overlay scene
-        this.scene.launch('outlinedScene');
+        this.scene.launch('outlinedScene', {levelNumber: levelNumber});
 
         // Disable interactivity in the main scene
         this.input.enabled = false;
@@ -352,6 +449,8 @@ export class Game extends Scene {
     }
 
     restoreGameScene() {
+        this.resumeTimer();
+
         this.createGridBtn();
 
         // Enable interactivity in the main scene
@@ -361,9 +460,51 @@ export class Game extends Scene {
         this.cameras.main.setZoom(1.0);
     }
 
+    restoreGameScenedestPopUp() {
+        this.resumeTimer();
+
+        // Enable interactivity in the main scene
+        this.input.enabled = true;
+
+        // Restore the main scene's scale
+        this.cameras.main.setZoom(1.0);
+    }
+
+    restartScene() {
+        this.scene.get('gameLevels').restartLevel(levelName);
+        this.scene.stop("Game");
+        
+    }
+
+    nextLevelScene(){
+        this.scene.get('gameLevels').nextLevel(levelName);
+        this.scene.stop("Game");
+    }
+
+}
+
+function onEvent() {
+    if (startTimer === 1) {
+        myTime +=1;
+    }
 }
 
 
+function calculateScore(maxScore, maxTime, timeTaken, invalidMoves) {
+    // Calculate score reduction for invalid moves
+    const invalidMovePenalty = 10 * invalidMoves;
+
+    // Calculate score reduction for exceeding max time
+    const timeExceedPenalty = timeTaken > maxTime ? (timeTaken - maxTime) * 5 : 0;
+
+    // Calculate the final score
+    let finalScore = maxScore - invalidMovePenalty - timeExceedPenalty;
+
+    // Ensure the score doesn't drop below zero
+    finalScore = Math.max(finalScore, 0);
+
+    return finalScore;
+}
 
 
 // *****************************************************************************************************************************

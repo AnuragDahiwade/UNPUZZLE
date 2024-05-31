@@ -8,6 +8,7 @@ let currentSoundState = "sound";
 let SoundOrNoSound;
 let backBtn;
 
+let levelNumber;
 
 class outlinedScene extends Phaser.Scene {
     constructor() {
@@ -16,6 +17,10 @@ class outlinedScene extends Phaser.Scene {
 
     preload() {
         
+    }
+
+    init(data){
+        levelNumber = data.levelNumber;
     }
 
     create() {
@@ -55,21 +60,24 @@ class outlinedScene extends Phaser.Scene {
         gridLevelBtn.setInteractive();
         
         gridLevelBtn.on('pointerdown', ()=>{
-            this.scene.stop("Game");
-            // this.scene.stop('outlinedScene');
-            // this.scene.start('gameLevels');
-
+            this.scene.stop("Game"); 
             this.scene.get('GameTemplate').changeScene('outlinedScene','gameLevels');
 
         }, this);
 
-        let levelText = this.add.text(gameWidth / 2 - 50, gameHeight - 70, "Level 0" , {
+        let levelText = this.add.text(gameWidth / 2 - 50, gameHeight - 70, "Level " + levelNumber , {
             fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         });
 
-        let forwordBtn = this.add.image(gameWidth - 100, gameHeight - 50, 'forword').setDisplaySize(75, 75).setInteractive().setAlpha(1);
+        let nextGameLevel = this.add.image(gameWidth - 100, gameHeight - 50, 'forword').setDisplaySize(75, 75).setInteractive().setAlpha(1);
+        nextGameLevel.on('pointerdown', ()=>{
+            this.scene.get('Game').nextLevelScene();
+            this.scene.stop();
+
+        }, this);
+
     }
 
     toggleBetweeenLightAndDarkBtn() {
